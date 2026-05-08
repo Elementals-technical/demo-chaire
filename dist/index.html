@@ -641,8 +641,8 @@
             <div class="card-body">
               <div class="button-row">
                 <button class="btn" id="init-button" type="button">Init player</button>
-                <!-- <button class="btn" id="destroy-button" type="button">Destroy</button>
-                <button class="btn" id="get-config-button" type="button">Get config</button> -->
+                <button class="btn" id="destroy-button" type="button">Destroy</button>
+                <button class="btn" id="get-config-button" type="button">Get config</button>
               </div>
               <div class="message" id="options-message">Loading options...</div>
               <div class="option-list" id="options-list"></div>
@@ -930,23 +930,10 @@
         window.open(arDownloadUrl, "_blank", "noopener,noreferrer");
       };
 
-      const resetContainer = () => {
-        const old = $("vivid-player-root");
-        if (!old || !old.parentNode) return;
-        const fresh = document.createElement("div");
-        fresh.id = "vivid-player-root";
-        old.parentNode.replaceChild(fresh, old);
-      };
-
       const destroyPlayer = async () => {
         if (!player) return;
-        try {
-          await player.destroy();
-        } catch (error) {
-          debug("destroy error", error && error.message ? error.message : String(error));
-        }
+        await player.destroy();
         player = null;
-        resetContainer();
       };
 
       const initDemo = async () => {
