@@ -699,6 +699,7 @@
       let player = null;
       let arDownloadUrl = "";
       let isPreparingAr = false;
+      let arNeedsFreshExport = false;
 
       const $ = (id) => document.getElementById(id);
       const setText = (id, value) => {
@@ -728,6 +729,31 @@
       const setArButtons = (enabled) => {
         $("open-ar").disabled = !enabled;
         $("open-ar-top").disabled = !enabled;
+      };
+      const waitForSceneSettle = (ms = 350) =>
+        new Promise((resolve) => window.setTimeout(resolve, ms));
+      const buildCurrentArConfiguration = () => {
+        if (!player) return undefined;
+
+        const schema = player.getSchema();
+        const productId = schema.product && schema.product.id;
+        const value = {
+          selection: schema.selection,
+          pcConfig: schema.pcConfig && schema.pcConfig.config ? schema.pcConfig.config : schema.pcConfig,
+        };
+
+        return productId ? { [String(productId)]: value } : { active: value };
+      };
+      const invalidateAr = (message) => {
+        arDownloadUrl = "";
+        arNeedsFreshExport = true;
+        $("vivid-ar-qr").innerHTML = "";
+        setArButtons(false);
+        setText("ar-status", "Needs refresh");
+        setText(
+          "ar-message",
+          message || "Configuration changed. Refresh QR to export the updated model.",
+        );
       };
 
       const showQr = (qrUrl, downloadUrl) => {
@@ -814,6 +840,7 @@
                 debug("setConfigOption", { key: option.key, value: variant.value });
                 renderConfigOptions();
                 writeConfigOutput(player.getConfiguration());
+                invalidateAr();
               } catch (error) {
                 setError("options-message", error && error.message ? error.message : String(error));
                 debug("setConfigOption failed", error && error.message ? error.message : String(error));
@@ -859,10 +886,13 @@
           isPreparingAr = true;
           setText("ar-message", "Preparing AR export and QR code...");
           setText("ar-status", "Preparing");
+          await waitForSceneSettle();
 
           const ar = await player.ar.open({
             format: DEMO.arFormat,
             downloadPageUrl: DEMO.downloadPageUrl,
+            configuration: buildCurrentArConfiguration(),
+            skipQuery: arNeedsFreshExport,
           });
 
           const downloadUrl = player.ar.createDownloadUrl(ar, {
@@ -879,6 +909,7 @@
           }
 
           arDownloadUrl = downloadUrl;
+          arNeedsFreshExport = false;
           showQr(qrUrl, downloadUrl);
           setArButtons(true);
           setText("ar-message", ar.reusedExisting ? "QR is ready. Existing AR assets were reused." : "QR is ready. New AR assets were generated.");
@@ -919,6 +950,7 @@
         $("viewer-placeholder").classList.remove("is-hidden");
         setArButtons(false);
         arDownloadUrl = "";
+        arNeedsFreshExport = false;
 
         if (window.__vividScriptFailed || !window.initVividPlayer) {
           throw new Error("Vivid CDN script could not be loaded.");
@@ -938,7 +970,11 @@
         ["ready", "configurationChanged", "error", "fullscreenChange", "renderProgress", "arRequested", "arOpened", "destroyed"].forEach((eventName) => {
           player.on(eventName, (payload) => {
             debug("event:" + eventName, payload || "");
-            if (eventName === "configurationChanged") renderConfigOptions();
+            if (eventName === "configurationChanged") {
+              renderConfigOptions();
+              writeConfigOutput(player.getConfiguration());
+              invalidateAr();
+            }
           });
         });
 
@@ -983,6 +1019,7 @@
         setText("ar-message", "AR is unavailable until the player is initialized.");
         $("options-list").innerHTML = "";
         $("vivid-ar-qr").innerHTML = "";
+        arNeedsFreshExport = false;
         writeConfigOutput({});
         $("viewer-placeholder").classList.remove("is-hidden");
         setArButtons(false);
