@@ -568,7 +568,7 @@
 
       <nav class="nav" aria-label="Demo navigation">
         <a href="./recipes.html">Recipes</a>
-        <a href="./VIVID_PLAYER_API.md">API.md</a>
+        <a href="https://elementalsweb.notion.site/Vivid-Player-CDN-API-35a14200da9280c79e80ebf6dd853137" target="_blank" rel="noreferrer">API.md</a>
         <button id="fullscreen-button" type="button">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
           Fullscreen
@@ -930,10 +930,23 @@
         window.open(arDownloadUrl, "_blank", "noopener,noreferrer");
       };
 
+      const resetContainer = () => {
+        const old = $("vivid-player-root");
+        if (!old || !old.parentNode) return;
+        const fresh = document.createElement("div");
+        fresh.id = "vivid-player-root";
+        old.parentNode.replaceChild(fresh, old);
+      };
+
       const destroyPlayer = async () => {
         if (!player) return;
-        await player.destroy();
+        try {
+          await player.destroy();
+        } catch (error) {
+          debug("destroy error", error && error.message ? error.message : String(error));
+        }
         player = null;
+        resetContainer();
       };
 
       const initDemo = async () => {
