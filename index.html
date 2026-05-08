@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vivid Player Demo | Lippert Components</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f8fbff;
+      --panel: #ffffff;
+      --ink: #2d333d;
+      --muted: #687381;
+      --faint: #9aa4b2;
+      --line: #dfe5fb;
+      --line-strong: #cfd8f4;
+      --accent: #36cc91;
+      --accent-dark: #20ac75;
+      --accent-soft: #e9fbf4;
+      --purple-soft: #e9e9ff;
+      --danger: #ff4967;
+      --shadow: 0 18px 48px rgba(42, 55, 80, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+    }
+
+    button,
+    a {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .icon {
+      width: 16px;
+      height: 16px;
+      flex: 0 0 auto;
+      stroke: currentColor;
+      stroke-width: 1.9;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+
+    .page {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      min-height: 72px;
+      border-bottom: 1px solid var(--line);
+      padding: 0 clamp(18px, 3vw, 34px);
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(16px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      position: relative;
+      width: 30px;
+      height: 30px;
+      flex: 0 0 auto;
+    }
+
+    .brand-mark span {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .brand-mark span:nth-child(1) { top: 0; left: 11px; background: #28c7ff; }
+    .brand-mark span:nth-child(2) { top: 5px; right: 2px; background: #43cf8f; }
+    .brand-mark span:nth-child(3) { bottom: 5px; right: 2px; background: #ffcf4d; }
+    .brand-mark span:nth-child(4) { bottom: 0; left: 11px; background: #ff5e7d; }
+    .brand-mark span:nth-child(5) { bottom: 5px; left: 2px; background: #7c68ff; }
+    .brand-mark span:nth-child(6) { top: 5px; left: 2px; background: #32d188; }
+
+    .brand-text {
+      display: grid;
+      line-height: 1;
+    }
+
+    .brand-text strong {
+      color: #1f2732;
+      font-size: 22px;
+      font-weight: 860;
+      letter-spacing: 0;
+    }
+
+    .brand-text span {
+      margin-top: 2px;
+      color: #657181;
+      font-size: 9px;
+      font-weight: 780;
+      letter-spacing: 0.16em;
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .nav a,
+    .nav button,
+    .btn {
+      display: inline-flex;
+      min-height: 40px;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 9px 14px;
+      color: #2d333d;
+      background: #fff;
+      cursor: pointer;
+      transition: border-color 0.15s ease, transform 0.15s ease, background-color 0.15s ease;
+    }
+
+    .nav a:hover,
+    .nav button:hover,
+    .btn:hover {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      border-color: var(--accent);
+      color: #103425;
+      background: var(--accent);
+      font-weight: 760;
+    }
+
+    .btn-primary:hover {
+      border-color: var(--accent-dark);
+      background: var(--accent-dark);
+    }
+
+    .btn:disabled,
+    .nav button:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+      transform: none;
+    }
+
+    .shell {
+      width: min(100%, 1540px);
+      margin: 0 auto;
+      padding: clamp(18px, 2.4vw, 34px);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 20px;
+      align-items: end;
+      margin-bottom: 18px;
+    }
+
+    .eyebrow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .chip {
+      display: inline-flex;
+      min-height: 28px;
+      align-items: center;
+      gap: 7px;
+      border-radius: 14px;
+      padding: 0 10px;
+      color: #303947;
+      background: var(--purple-soft);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .chip-green {
+      background: var(--accent-soft);
+    }
+
+    .copy-dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 3px;
+      background: #48caa0;
+      box-shadow: 3px -3px 0 rgba(72, 202, 160, 0.35);
+    }
+
+    h1 {
+      margin: 0;
+      color: #202833;
+      font-size: clamp(34px, 5vw, 64px);
+      line-height: 0.98;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      max-width: 720px;
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.65;
+    }
+
+    .status-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .status-pill {
+      display: grid;
+      min-width: 128px;
+      gap: 3px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 9px 12px;
+      background: #fff;
+    }
+
+    .status-pill span:first-child {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .status-pill span:last-child {
+      color: #26313d;
+      font-size: 13px;
+      font-weight: 820;
+    }
+
+    .demo-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(330px, 420px);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .viewer-card,
+    .controls-card,
+    .ar-card,
+    .config-card {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .viewer-card {
+      overflow: hidden;
+    }
+
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      min-height: 68px;
+      border-bottom: 1px solid var(--line);
+      padding: 14px 18px;
+    }
+
+    .card-title {
+      margin: 0;
+      color: #252f3b;
+      font-size: 16px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    .card-subtitle {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .viewer-body {
+      position: relative;
+      min-height: 620px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    #vivid-player-root {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 720px;
+      min-height: min(720px, calc(100vh - 245px));
+    }
+
+    .viewer-placeholder {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      display: grid;
+      place-items: center;
+      padding: 32px;
+      color: #657181;
+      text-align: center;
+      background: #fff;
+    }
+
+    .viewer-placeholder.is-hidden {
+      display: none;
+    }
+
+    .loader {
+      display: inline-flex;
+      width: 38px;
+      height: 38px;
+      margin-bottom: 14px;
+      border: 3px solid #dce4f8;
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .viewer-placeholder strong {
+      display: block;
+      color: #2d333d;
+      font-size: 17px;
+    }
+
+    .viewer-placeholder span {
+      display: block;
+      max-width: 430px;
+      margin-top: 8px;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .side-stack {
+      display: grid;
+      gap: 14px;
+    }
+
+    .card-body {
+      display: grid;
+      gap: 12px;
+      padding: 16px;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .message {
+      min-height: 20px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .message.is-error {
+      color: var(--danger);
+    }
+
+    .option-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .option-group {
+      display: grid;
+      gap: 10px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+      background: #fff;
+    }
+
+    .option-name {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      color: #202833;
+      font-size: 14px;
+      font-weight: 820;
+    }
+
+    .option-key {
+      display: inline-flex;
+      min-height: 24px;
+      align-items: center;
+      border-radius: 12px;
+      padding: 0 9px;
+      color: #404858;
+      background: var(--purple-soft);
+      font-size: 11px;
+      font-weight: 520;
+      overflow-wrap: anywhere;
+    }
+
+    .variant-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .variant {
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      padding: 7px 12px;
+      color: #303947;
+      background: #fff;
+      cursor: pointer;
+    }
+
+    .variant:hover {
+      border-color: var(--accent);
+    }
+
+    .variant.is-selected {
+      border-color: var(--accent);
+      color: #103425;
+      background: var(--accent-soft);
+    }
+
+    .code-output {
+      max-height: 160px;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      color: #26313d;
+      background: #fbfcff;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 11px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .qr-card {
+      display: grid;
+      grid-template-columns: 116px minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+      background: var(--accent-soft);
+    }
+
+    .qr-card img {
+      width: 116px;
+      height: 116px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .qr-copy {
+      display: grid;
+      gap: 7px;
+      min-width: 0;
+    }
+
+    .qr-copy strong {
+      color: #26313d;
+      font-size: 13px;
+    }
+
+    .qr-copy a {
+      color: #16845e;
+      font-size: 11px;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    @media (max-width: 1060px) {
+      .hero,
+      .demo-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .status-row {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 16px;
+      }
+
+      .nav {
+        justify-content: flex-start;
+      }
+
+      .viewer-body {
+        min-height: 520px;
+      }
+
+      #vivid-player-root {
+        height: 560px;
+        min-height: 520px;
+      }
+
+      .qr-card {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <a class="brand" href="./index.html" aria-label="Vivid demo home">
+       
+        <div class="brand-text">
+          <strong>vivid</strong>
+          <span>BUILD</span>
+        </div>
+      </a>
+
+      <nav class="nav" aria-label="Demo navigation">
+        <a href="./recipes.html">Recipes</a>
+        <a href="./VIVID_PLAYER_API.md">API.md</a>
+        <button id="fullscreen-button" type="button">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+          Fullscreen
+        </button>
+        <button class="btn-primary" id="open-ar-top" type="button" disabled>
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg>
+          Open AR
+        </button>
+      </nav>
+    </header>
+
+    <main class="shell">
+      <section class="hero" aria-label="Demo intro">
+        <div>
+          <div class="eyebrow">
+            <span class="chip">Project id: 492 <span class="copy-dot" aria-hidden="true"></span></span>
+            <span class="chip">Product id: 2739 <span class="copy-dot" aria-hidden="true"></span></span>
+            <span class="chip chip-green">WebGL</span>
+          </div>
+          <h1>Lippert Components demo</h1>
+          <p class="lead">A simple client demo page for embedding Vivid Player, switching exposed material variants, and preparing an AR QR handoff.</p>
+        </div>
+
+        <div class="status-row" aria-label="Demo status">
+          <div class="status-pill">
+            <span>Player</span>
+            <span id="player-status">Initializing</span>
+          </div>
+          <div class="status-pill">
+            <span>Configuration</span>
+            <span id="config-status">Waiting</span>
+          </div>
+          <div class="status-pill">
+            <span>AR handoff</span>
+            <span id="ar-status">Waiting</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="demo-grid">
+        <div class="viewer-card">
+          <div class="card-head">
+            <div>
+              <h2 class="card-title">DemoChair preview</h2>
+              <p class="card-subtitle">Loaded from the production Vivid CDN</p>
+            </div>
+            <span class="chip">DemoChair</span>
+          </div>
+
+          <div class="viewer-body">
+            <div class="viewer-placeholder" id="viewer-placeholder">
+              <div>
+                <span class="loader" aria-hidden="true"></span>
+                <strong>Loading Vivid WebGL player</strong>
+                <span>The demo initializes the CDN player and prepares configuration controls when the product is ready.</span>
+              </div>
+            </div>
+            <div id="vivid-player-root" style="width: 100%; height: 720px;"></div>
+          </div>
+        </div>
+
+        <aside class="side-stack" aria-label="Demo controls">
+          <section class="controls-card">
+            <div class="card-head">
+              <div>
+                <h2 class="card-title">Player controls</h2>
+                <p class="card-subtitle">Init, destroy, read and set config</p>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="button-row">
+                <button class="btn" id="init-button" type="button">Init player</button>
+                <button class="btn" id="destroy-button" type="button">Destroy</button>
+                <button class="btn" id="get-config-button" type="button">Get config</button>
+              </div>
+              <div class="message" id="options-message">Loading options...</div>
+              <div class="option-list" id="options-list"></div>
+            </div>
+          </section>
+
+          <section class="config-card">
+            <div class="card-head">
+              <div>
+                <h2 class="card-title">Current config</h2>
+                <p class="card-subtitle">Output of <code>player.getConfiguration()</code></p>
+              </div>
+            </div>
+            <div class="card-body">
+              <pre class="code-output" id="config-output">{}</pre>
+            </div>
+          </section>
+
+          <section class="ar-card">
+            <div class="card-head">
+              <div>
+                <h2 class="card-title">AR QR</h2>
+                <p class="card-subtitle">Generate a mobile download link</p>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="button-row">
+                <button class="btn btn-primary" id="prepare-ar" type="button">Refresh QR</button>
+                <button class="btn" id="open-ar" type="button" disabled>Open link</button>
+              </div>
+              <div id="vivid-ar-qr"></div>
+              <div class="message" id="ar-message">AR will be prepared automatically when export is available.</div>
+            </div>
+          </section>
+        </aside>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://player.vivid3d.tech/cdn/vivid-player.js" onerror="window.__vividScriptFailed = true"></script>
+  <script>
+    (async function () {
+      const DEMO = {
+        container: "#vivid-player-root",
+        idProject: "492",
+        idProduct: "2739",
+        environment: "production",
+        viewMode: "WebGL",
+        downloadPageUrl: "https://player.vivid3d.tech/ar-download",
+        arFormat: "both",
+        qrSize: 240,
+      };
+
+      let player = null;
+      let arDownloadUrl = "";
+      let isPreparingAr = false;
+
+      const $ = (id) => document.getElementById(id);
+      const setText = (id, value) => {
+        const node = $(id);
+        if (node) node.textContent = value;
+      };
+      const setError = (id, value) => {
+        const node = $(id);
+        if (!node) return;
+        node.textContent = value;
+        node.classList.add("is-error");
+      };
+      const clearError = (id) => {
+        const node = $(id);
+        if (node) node.classList.remove("is-error");
+      };
+      const debug = (label, payload) => {
+        if (payload === undefined) {
+          console.debug("[Vivid demo]", label);
+        } else {
+          console.debug("[Vivid demo]", label, payload);
+        }
+      };
+      const writeConfigOutput = (value) => {
+        $("config-output").textContent = JSON.stringify(value, null, 2);
+      };
+      const setArButtons = (enabled) => {
+        $("open-ar").disabled = !enabled;
+        $("open-ar-top").disabled = !enabled;
+      };
+
+      const showQr = (qrUrl, downloadUrl) => {
+        const root = $("vivid-ar-qr");
+        root.innerHTML = "";
+
+        const card = document.createElement("div");
+        card.className = "qr-card";
+
+        const image = document.createElement("img");
+        image.alt = "Open in AR";
+        image.width = 240;
+        image.height = 240;
+        image.src = qrUrl;
+        card.appendChild(image);
+
+        const copy = document.createElement("div");
+        copy.className = "qr-copy";
+
+        const title = document.createElement("strong");
+        title.textContent = "Scan to open on mobile";
+        copy.appendChild(title);
+
+        const link = document.createElement("a");
+        link.href = downloadUrl;
+        link.target = "_blank";
+        link.rel = "noreferrer";
+        link.textContent = downloadUrl;
+        copy.appendChild(link);
+
+        card.appendChild(copy);
+        root.appendChild(card);
+      };
+
+      const renderConfigOptions = () => {
+        const root = $("options-list");
+        root.innerHTML = "";
+
+        if (!player) {
+          setText("options-message", "Player is not ready yet.");
+          return;
+        }
+
+        const options = player.getConfigOptions();
+        if (!options.length) {
+          setText("options-message", "No configurable options were exposed by this product.");
+          setText("config-status", "No options");
+          return;
+        }
+
+        setText("options-message", options.length + " option group(s) available.");
+        setText("config-status", options.length + " group(s)");
+
+        options.forEach((option) => {
+          const group = document.createElement("div");
+          group.className = "option-group";
+
+          const name = document.createElement("div");
+          name.className = "option-name";
+
+          const label = document.createElement("span");
+          label.textContent = option.label || option.key;
+          name.appendChild(label);
+
+          const key = document.createElement("span");
+          key.className = "option-key";
+          key.textContent = option.key;
+          name.appendChild(key);
+          group.appendChild(name);
+
+          const variants = document.createElement("div");
+          variants.className = "variant-grid";
+
+          option.variants.forEach((variant) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "variant" + (variant.selected ? " is-selected" : "");
+            button.textContent = variant.label || variant.name || String(variant.value);
+            button.title = "value=" + variant.value + "; id=" + variant.id;
+            button.addEventListener("click", async () => {
+              try {
+                setText("config-status", "Applying...");
+                await player.setConfigOption(option.key, variant.value);
+                debug("setConfigOption", { key: option.key, value: variant.value });
+                renderConfigOptions();
+                writeConfigOutput(player.getConfiguration());
+              } catch (error) {
+                setError("options-message", error && error.message ? error.message : String(error));
+                debug("setConfigOption failed", error && error.message ? error.message : String(error));
+              }
+            });
+            variants.appendChild(button);
+          });
+
+          group.appendChild(variants);
+          root.appendChild(group);
+        });
+      };
+
+      const applyDemoVariant = async () => {
+        const options = player.getConfigOptions();
+        const firstOption = options[0] ? player.getConfigOption(options[0].key) : null;
+
+        if (firstOption && firstOption.variants[1]) {
+          await player.setConfigOption(firstOption.key, firstOption.variants[1].value);
+          debug("demo variant applied", {
+            key: firstOption.key,
+            value: firstOption.variants[1].value,
+          });
+        }
+      };
+
+      const prepareAr = async () => {
+        if (!player || isPreparingAr) return;
+
+        clearError("ar-message");
+        setText("ar-message", "Checking AR export...");
+        setText("ar-status", "Checking");
+        setArButtons(false);
+        arDownloadUrl = "";
+
+        try {
+          if (!player.ar.isAvailable()) {
+            setText("ar-message", "This runtime does not expose AR export methods.");
+            setText("ar-status", "Unavailable");
+            return;
+          }
+
+          isPreparingAr = true;
+          setText("ar-message", "Preparing AR export and QR code...");
+          setText("ar-status", "Preparing");
+
+          const ar = await player.ar.open({
+            format: DEMO.arFormat,
+            downloadPageUrl: DEMO.downloadPageUrl,
+          });
+
+          const downloadUrl = player.ar.createDownloadUrl(ar, {
+            downloadPageUrl: DEMO.downloadPageUrl,
+          });
+          const qrUrl = downloadUrl
+            ? player.ar.createQrImageUrl(downloadUrl, { size: DEMO.qrSize })
+            : "";
+
+          if (!downloadUrl || !qrUrl) {
+            setText("ar-message", "AR export completed, but no public download URL was returned.");
+            setText("ar-status", "No URL");
+            return;
+          }
+
+          arDownloadUrl = downloadUrl;
+          showQr(qrUrl, downloadUrl);
+          setArButtons(true);
+          setText("ar-message", ar.reusedExisting ? "QR is ready. Existing AR assets were reused." : "QR is ready. New AR assets were generated.");
+          setText("ar-status", "Ready");
+          debug("AR ready", { reusedExisting: ar.reusedExisting, downloadUrl });
+        } catch (error) {
+          const message = error && error.message ? error.message : String(error);
+          setError("ar-message", message);
+          setText("ar-status", "Error");
+          debug("AR failed", message);
+        } finally {
+          isPreparingAr = false;
+        }
+      };
+
+      const openAr = () => {
+        if (!arDownloadUrl) return;
+        window.open(arDownloadUrl, "_blank", "noopener,noreferrer");
+      };
+
+      const destroyPlayer = async () => {
+        if (!player) return;
+        await player.destroy();
+        player = null;
+      };
+
+      const initDemo = async () => {
+        clearError("options-message");
+        clearError("ar-message");
+        setText("player-status", "Initializing");
+        setText("config-status", "Waiting");
+        setText("ar-status", "Waiting");
+        setText("options-message", "Loading options...");
+        setText("ar-message", "AR will be prepared automatically when export is available.");
+        $("options-list").innerHTML = "";
+        $("vivid-ar-qr").innerHTML = "";
+        writeConfigOutput({});
+        $("viewer-placeholder").classList.remove("is-hidden");
+        setArButtons(false);
+        arDownloadUrl = "";
+
+        if (window.__vividScriptFailed || !window.initVividPlayer) {
+          throw new Error("Vivid CDN script could not be loaded.");
+        }
+
+        await destroyPlayer();
+        debug("initVividPlayer", DEMO);
+
+        player = await window.initVividPlayer({
+          container: DEMO.container,
+          idProject: DEMO.idProject,
+          idProduct: DEMO.idProduct,
+          environment: DEMO.environment,
+          viewMode: DEMO.viewMode,
+        });
+
+        ["ready", "configurationChanged", "error", "fullscreenChange", "renderProgress", "arRequested", "arOpened", "destroyed"].forEach((eventName) => {
+          player.on(eventName, (payload) => {
+            debug("event:" + eventName, payload || "");
+            if (eventName === "configurationChanged") renderConfigOptions();
+          });
+        });
+
+        setText("player-status", "Ready");
+        $("viewer-placeholder").classList.add("is-hidden");
+
+        await applyDemoVariant();
+        renderConfigOptions();
+        writeConfigOutput(player.getConfiguration());
+        await prepareAr();
+      };
+
+      $("fullscreen-button").addEventListener("click", () => {
+        if (player) player.fullscreen.toggle();
+      });
+      $("prepare-ar").addEventListener("click", prepareAr);
+      $("open-ar").addEventListener("click", openAr);
+      $("open-ar-top").addEventListener("click", openAr);
+      $("get-config-button").addEventListener("click", () => {
+        if (!player) {
+          writeConfigOutput({});
+          return;
+        }
+        writeConfigOutput(player.getConfiguration());
+      });
+      $("init-button").addEventListener("click", async () => {
+        try {
+          await initDemo();
+        } catch (error) {
+          const message = error && error.message ? error.message : String(error);
+          setError("options-message", message);
+          setText("player-status", "Error");
+          debug("init failed", message);
+        }
+      });
+      $("destroy-button").addEventListener("click", async () => {
+        await destroyPlayer();
+        setText("player-status", "Destroyed");
+        setText("config-status", "Stopped");
+        setText("ar-status", "Stopped");
+        setText("options-message", "Player is destroyed. Click Init player to start again.");
+        setText("ar-message", "AR is unavailable until the player is initialized.");
+        $("options-list").innerHTML = "";
+        $("vivid-ar-qr").innerHTML = "";
+        writeConfigOutput({});
+        $("viewer-placeholder").classList.remove("is-hidden");
+        setArButtons(false);
+        debug("destroyed");
+      });
+
+      try {
+        await initDemo();
+      } catch (error) {
+        const message = error && error.message ? error.message : String(error);
+        $("viewer-placeholder").classList.remove("is-hidden");
+        setError("options-message", message);
+        setText("player-status", "Error");
+        setText("config-status", "Stopped");
+        debug("init failed", message);
+      }
+    })();
+  </script>
+</body>
+</html>
