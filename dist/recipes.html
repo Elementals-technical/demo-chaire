@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -201,7 +201,7 @@
     </a>
     <nav class="nav" aria-label="Recipes navigation">
       <a href="./index.html">Demo</a>
-      <a href="./VIVID_PLAYER_API.md">API.md</a>
+      <a href="./api.html">API guide</a>
     </nav>
   </header>
 
@@ -209,7 +209,7 @@
     <section class="hero">
       <span class="chip">Recipes</span>
       <h1>Integration recipes</h1>
-      <p class="lead">Готовые короткие сценарии для клиентской интеграции Vivid Player: запуск, конфигурация, собственный UI вариантов и AR QR.</p>
+      <p class="lead">Copy-ready examples for a native Vivid Player integration: initialization, lifecycle, custom option controls, live configuration output, and AR QR.</p>
     </section>
 
     <section class="recipes">
@@ -217,7 +217,7 @@
         <div class="recipe-head">
           <div>
             <h2>1. Minimal player init</h2>
-            <p>Встроить WebGL player в любой контейнер.</p>
+            <p>Mount the WebGL runtime directly into a page container. No iframe is used.</p>
           </div>
           <span class="chip">init</span>
         </div>
@@ -230,17 +230,20 @@
       idProject: "1189",
       idProduct: "3478",
       environment: "production",
-      viewMode: "WebGL"
+      viewMode: "WebGL",
+      shareable: true,
+      playcanvasBaseUrl: window.location.origin + "/vivid-assets/"
     });
   })();
 &lt;/script&gt;</code></pre>
+        <div class="note"><code>shareable: true</code> removes project-level product selection. <code>playcanvasBaseUrl</code> points the SDK at this demo server’s fixed-origin asset proxy.</div>
       </article>
 
       <article class="recipe">
         <div class="recipe-head">
           <div>
             <h2>2. Destroy and re-init</h2>
-            <p>Перезапустить player перед сменой продукта или страницы.</p>
+            <p>Destroy the active API instance before re-initializing it.</p>
           </div>
           <span class="chip">lifecycle</span>
         </div>
@@ -254,7 +257,9 @@ async function initPlayer() {
     idProject: "1189",
     idProduct: "3478",
     environment: "production",
-    viewMode: "WebGL"
+    viewMode: "WebGL",
+    shareable: true,
+    playcanvasBaseUrl: window.location.origin + "/vivid-assets/"
   });
 }
 
@@ -269,7 +274,7 @@ async function destroyPlayer() {
         <div class="recipe-head">
           <div>
             <h2>3. Build a variants UI</h2>
-            <p>Получить опции продукта и переключать варианты кнопками.</p>
+            <p>Read product options and switch variants with client-owned buttons.</p>
           </div>
           <span class="chip">config</span>
         </div>
@@ -289,14 +294,41 @@ options.forEach(option =&gt; {
     document.body.appendChild(button);
   });
 });</code></pre>
-        <div class="note">Рекомендуемый путь для UI: <code>getConfigOptions()</code> → render variants → <code>setConfigOption(key, value)</code>.</div>
+        <div class="note">Recommended UI flow: <code>getConfigOptions()</code> → render variants → <code>setConfigOption(key, value)</code>. Re-render after every change so selected states stay current.</div>
       </article>
 
       <article class="recipe">
         <div class="recipe-head">
           <div>
-            <h2>4. AR QR handoff</h2>
-            <p>Создать GLB/USDZ download URL и QR для мобильного устройства.</p>
+            <h2>4. Keep Current config live</h2>
+            <p>Show the exact selection state returned by the player API.</p>
+          </div>
+          <span class="chip">state</span>
+        </div>
+        <pre><code>const configOutput = document.querySelector("#config-output");
+
+function renderCurrentConfig() {
+  configOutput.textContent = JSON.stringify(
+    player.getConfiguration(),
+    null,
+    2
+  );
+}
+
+player.on("configurationChanged", () =&gt; {
+  renderCurrentConfig();
+  renderOptionButtons();
+});
+
+renderCurrentConfig();</code></pre>
+        <div class="note"><code>getConfiguration()</code> returns the current numeric selection map. Use <code>getSchema()</code> when the integration also needs product metadata and the normalized PlayCanvas configuration.</div>
+      </article>
+
+      <article class="recipe">
+        <div class="recipe-head">
+          <div>
+            <h2>5. AR QR handoff</h2>
+            <p>Create a GLB/USDZ download URL and QR code for a mobile device.</p>
           </div>
           <span class="chip">AR</span>
         </div>

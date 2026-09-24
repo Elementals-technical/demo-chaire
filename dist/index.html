@@ -329,14 +329,6 @@
       min-height: min(720px, calc(100vh - 245px));
     }
 
-    #vivid-player-root iframe {
-      display: block;
-      width: 100%;
-      height: 100%;
-      border: 0;
-      background: #fff;
-    }
-
     .viewer-placeholder {
       position: absolute;
       inset: 0;
@@ -362,6 +354,10 @@
       border-top-color: var(--accent);
       border-radius: 50%;
       animation: spin 0.9s linear infinite;
+    }
+
+    .loader.is-hidden {
+      display: none;
     }
 
     @keyframes spin {
@@ -577,7 +573,7 @@
 
       <nav class="nav" aria-label="Demo navigation">
         <a href="./recipes.html">Recipes</a>
-        <a href="./VIVID_PLAYER_API.md">API.md</a>
+        <a href="./api.html">API guide</a>
         <button id="fullscreen-button" type="button">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
           Fullscreen
@@ -630,9 +626,9 @@
           <div class="viewer-body">
             <div class="viewer-placeholder" id="viewer-placeholder">
               <div>
-                <span class="loader" aria-hidden="true"></span>
-                <strong>Loading Vivid WebGL player</strong>
-                <span>The demo initializes the CDN player and prepares configuration controls when the product is ready.</span>
+                <span class="loader" id="viewer-loader" aria-hidden="true"></span>
+                <strong id="viewer-placeholder-title">Loading Vivid WebGL player</strong>
+                <span id="viewer-placeholder-detail">The demo initializes the player through the JavaScript API and prepares configuration controls when the product is ready.</span>
               </div>
             </div>
             <div id="vivid-player-root" style="width: 100%; height: 720px;"></div>
@@ -698,7 +694,6 @@
         container: "#vivid-player-root",
         idProject: "1189",
         idProduct: "3478",
-        playerUrl: "https://player.vivid3d.tech/1189/3478/shareable",
         playcanvasBaseUrl: window.location.origin + "/vivid-assets/",
         environment: "production",
         viewMode: "WebGL",
@@ -768,27 +763,20 @@
         );
       };
 
-      const showEmbeddedFallback = (reason) => {
-        const root = $("vivid-player-root");
-        root.innerHTML = "";
-
-        const frame = document.createElement("iframe");
-        frame.src = DEMO.playerUrl;
-        frame.title = "RATIONAL iCombi configurator";
-        frame.allow = "fullscreen; xr-spatial-tracking";
-        frame.setAttribute("allowfullscreen", "");
-        root.appendChild(frame);
-
-        $("viewer-placeholder").classList.add("is-hidden");
+      const showNativePlayerError = (reason) => {
+        $("vivid-player-root").innerHTML = "";
+        $("viewer-placeholder").classList.remove("is-hidden");
+        $("viewer-loader").classList.add("is-hidden");
+        setText("viewer-placeholder-title", "Vivid Player could not be initialized");
+        setText("viewer-placeholder-detail", reason || "The native API initialization failed.");
         $("options-list").innerHTML = "";
         $("vivid-ar-qr").innerHTML = "";
         setArButtons(false);
-        setText("player-status", "Embedded");
-        setText("config-status", "In player");
-        setText("ar-status", "In player");
-        setText("options-message", "Use the built-in product controls inside the embedded Vivid player.");
-        setText("ar-message", "AR and download actions remain available from the embedded player menu.");
-        debug("using embedded fallback", reason || "SDK unavailable");
+        setText("player-status", "Error");
+        setText("config-status", "Stopped");
+        setText("ar-status", "Unavailable");
+        setError("options-message", reason || "The native API initialization failed.");
+        setText("ar-message", "AR is unavailable until the native player is initialized.");
       };
 
       const showQr = (qrUrl, downloadUrl) => {
@@ -972,6 +960,9 @@
         $("vivid-ar-qr").innerHTML = "";
         writeConfigOutput({});
         $("viewer-placeholder").classList.remove("is-hidden");
+        $("viewer-loader").classList.remove("is-hidden");
+        setText("viewer-placeholder-title", "Loading Vivid WebGL player");
+        setText("viewer-placeholder-detail", "The demo initializes the player through the JavaScript API and prepares configuration controls when the product is ready.");
         setArButtons(false);
         arDownloadUrl = "";
         arNeedsFreshExport = false;
@@ -1018,11 +1009,7 @@
       };
 
       $("fullscreen-button").addEventListener("click", () => {
-        if (player) {
-          player.fullscreen.toggle();
-        } else if ($("vivid-player-root").requestFullscreen) {
-          $("vivid-player-root").requestFullscreen();
-        }
+        if (player) player.fullscreen.toggle();
       });
       $("prepare-ar").addEventListener("click", prepareAr);
       $("open-ar").addEventListener("click", openAr);
@@ -1039,7 +1026,7 @@
           await initDemo();
         } catch (error) {
           const message = error && error.message ? error.message : String(error);
-          showEmbeddedFallback(message);
+          showNativePlayerError(message);
           debug("init failed", message);
         }
       });
@@ -1055,6 +1042,9 @@
         arNeedsFreshExport = false;
         writeConfigOutput({});
         $("viewer-placeholder").classList.remove("is-hidden");
+        $("viewer-loader").classList.add("is-hidden");
+        setText("viewer-placeholder-title", "Vivid Player is stopped");
+        setText("viewer-placeholder-detail", "Click Init player to create a new native API instance.");
         setArButtons(false);
         debug("destroyed");
       });
@@ -1063,7 +1053,7 @@
         await initDemo();
       } catch (error) {
         const message = error && error.message ? error.message : String(error);
-        showEmbeddedFallback(message);
+        showNativePlayerError(message);
         debug("init failed", message);
       }
     })();

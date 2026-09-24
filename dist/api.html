@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <base href="/" />
+  <title>Native Vivid Player API Guide</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f8fbff;
+      --panel: #fff;
+      --ink: #252f3b;
+      --muted: #687381;
+      --line: #dfe5fb;
+      --accent: #36cc91;
+      --accent-soft: #e9fbf4;
+      --code: #101722;
+      --shadow: 0 18px 48px rgba(42, 55, 80, 0.1);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      color: var(--ink);
+      background: var(--bg);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .topbar {
+      display: flex;
+      min-height: 72px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      border-bottom: 1px solid var(--line);
+      padding: 0 clamp(18px, 3vw, 34px);
+      background: rgba(255, 255, 255, 0.94);
+    }
+
+    .brand { font-size: 22px; font-weight: 860; }
+
+    .nav { display: flex; flex-wrap: wrap; gap: 8px; }
+
+    .nav a {
+      display: inline-flex;
+      min-height: 40px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 9px 14px;
+      background: #fff;
+    }
+
+    .wrap {
+      width: min(100%, 1080px);
+      margin: 0 auto;
+      padding: clamp(24px, 4vw, 48px);
+    }
+
+    .hero { margin-bottom: 24px; }
+
+    .chip {
+      display: inline-flex;
+      min-height: 28px;
+      align-items: center;
+      border-radius: 14px;
+      padding: 0 10px;
+      background: var(--accent-soft);
+      font-size: 13px;
+    }
+
+    h1 {
+      margin: 16px 0 0;
+      font-size: clamp(36px, 6vw, 64px);
+      line-height: 0.98;
+    }
+
+    .lead {
+      max-width: 780px;
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.65;
+    }
+
+    .stack { display: grid; gap: 16px; }
+
+    .section {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .section-copy { padding: 18px; }
+    .section h2 { margin: 0; font-size: 19px; }
+
+    .section p,
+    .section li {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .section p:last-child { margin-bottom: 0; }
+
+    pre {
+      overflow: auto;
+      margin: 0;
+      padding: 18px;
+      color: #eef4f7;
+      background: var(--code);
+      font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      white-space: pre;
+    }
+
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+
+    .note {
+      border-left: 3px solid var(--accent);
+      margin: 16px 18px 18px;
+      border-radius: 8px;
+      padding: 12px 14px;
+      color: #245442;
+      background: var(--accent-soft);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./index.html">Vivid</a>
+    <nav class="nav" aria-label="API guide navigation">
+      <a href="./index.html">Demo</a>
+      <a href="./recipes.html">Recipes</a>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <span class="chip">Native JavaScript API</span>
+      <h1>Vivid Player integration guide</h1>
+      <p class="lead">Mount project 1189 / product 3478 directly into a page, build client-owned Player controls, and keep Current config synchronized. No iframe is used.</p>
+    </section>
+
+    <div class="stack">
+      <section class="section">
+        <div class="section-copy">
+          <h2>1. Add a container and the SDK</h2>
+          <p>The SDK creates the PlayCanvas canvas inside the selected element.</p>
+        </div>
+        <pre><code>&lt;div id="vivid-player-root" style="width:100%;height:720px"&gt;&lt;/div&gt;
+&lt;script src="https://player.vivid3d.tech/cdn/vivid-player.js"&gt;&lt;/script&gt;</code></pre>
+      </section>
+
+      <section class="section">
+        <div class="section-copy">
+          <h2>2. Initialize the native player</h2>
+        </div>
+        <pre><code>let player = await window.initVividPlayer({
+  container: "#vivid-player-root",
+  idProject: "1189",
+  idProduct: "3478",
+  environment: "production",
+  viewMode: "WebGL",
+  shareable: true,
+  playcanvasBaseUrl: window.location.origin + "/vivid-assets/"
+});</code></pre>
+        <div class="note"><code>shareable: true</code> fixes the active product and removes Product selection. This demo uses a fixed-origin asset proxy because the current PlayCanvas export restricts browser origins.</div>
+      </section>
+
+      <section class="section">
+        <div class="section-copy">
+          <h2>3. Build Player controls from API data</h2>
+        </div>
+        <pre><code>function renderOptionButtons() {
+  const options = player.getConfigOptions();
+
+  options.forEach((option) =&gt; {
+    option.variants.forEach((variant) =&gt; {
+      const button = document.createElement("button");
+      button.textContent = variant.label || variant.name;
+      button.disabled = variant.selected;
+
+      button.addEventListener("click", async () =&gt; {
+        await player.setConfigOption(option.key, variant.value);
+        renderOptionButtons();
+        renderCurrentConfig();
+      });
+    });
+  });
+}</code></pre>
+        <div class="note">The RATIONAL product exposes five groups: Icombi Body, Stand, Fat Drain, Vent, and Open.</div>
+      </section>
+
+      <section class="section">
+        <div class="section-copy">
+          <h2>4. Display and synchronize Current config</h2>
+        </div>
+        <pre><code>function renderCurrentConfig() {
+  document.querySelector("#config-output").textContent =
+    JSON.stringify(player.getConfiguration(), null, 2);
+}
+
+player.on("configurationChanged", () =&gt; {
+  renderOptionButtons();
+  renderCurrentConfig();
+});</code></pre>
+        <div class="note">Use <code>getConfiguration()</code> for the compact selection map. Use <code>getSchema()</code> when product metadata and normalized PlayCanvas configuration are also required.</div>
+      </section>
+
+      <section class="section">
+        <div class="section-copy">
+          <h2>5. Lifecycle</h2>
+        </div>
+        <pre><code>await player.fullscreen.toggle();
+
+await player.destroy();
+player = null;</code></pre>
+        <div class="note">Destroy the current instance before initializing another player in the same page. The working implementation is available in <code>dist/index.html</code>.</div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
