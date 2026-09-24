@@ -967,11 +967,6 @@
         arDownloadUrl = "";
         arNeedsFreshExport = false;
 
-        const expectedPath = "/" + DEMO.idProject + "/" + DEMO.idProduct;
-        if (window.location.pathname !== expectedPath) {
-          window.history.replaceState(null, "", expectedPath + window.location.search + window.location.hash);
-        }
-
         if (window.__vividScriptFailed || !window.initVividPlayer) {
           throw new Error("Vivid CDN script could not be loaded.");
         }
