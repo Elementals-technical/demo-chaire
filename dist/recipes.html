@@ -232,11 +232,11 @@
       environment: "production",
       viewMode: "WebGL",
       shareable: true,
-      playcanvasBaseUrl: window.location.origin + "/vivid-assets/"
+      playcanvasBaseUrl: "https://2d-render-admin-storage.fra1.cdn.digitaloceanspaces.com/projects/1189/products/3478/playcanvas/"
     });
   })();
 &lt;/script&gt;</code></pre>
-        <div class="note"><code>shareable: true</code> removes project-level product selection. <code>playcanvasBaseUrl</code> points the SDK at this demo server’s fixed-origin asset proxy.</div>
+        <div class="note"><code>shareable: true</code> removes project-level product selection. <code>playcanvasBaseUrl</code> points directly to the product export in DigitalOcean Spaces; allow the site origin in the Space CORS policy.</div>
       </article>
 
       <article class="recipe">
@@ -259,7 +259,7 @@ async function initPlayer() {
     environment: "production",
     viewMode: "WebGL",
     shareable: true,
-    playcanvasBaseUrl: window.location.origin + "/vivid-assets/"
+    playcanvasBaseUrl: "https://2d-render-admin-storage.fra1.cdn.digitaloceanspaces.com/projects/1189/products/3478/playcanvas/"
   });
 }
 

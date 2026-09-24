@@ -33,7 +33,8 @@ async function initPlayer() {
     environment: "production",
     viewMode: "WebGL",
     shareable: true,
-    playcanvasBaseUrl: window.location.origin + "/vivid-assets/",
+    playcanvasBaseUrl:
+      "https://2d-render-admin-storage.fra1.cdn.digitaloceanspaces.com/projects/1189/products/3478/playcanvas/",
   });
 
   return player;
@@ -42,7 +43,7 @@ async function initPlayer() {
 
 `shareable: true` keeps the selected product fixed and removes the project-level `Product selection` block.
 
-This particular export restricts direct browser access to its PlayCanvas files. The included Node server therefore exposes a fixed `/vivid-assets/` proxy and rewrites the export's absolute asset prefix. In an environment where the product CDN allows the client's origin, `playcanvasBaseUrl` can point directly to the product export.
+`playcanvasBaseUrl` points directly to the PlayCanvas export in DigitalOcean Spaces. The Space CORS policy must allow the deployed website origin, currently `https://rational-icombi-gzvwt.ondigitalocean.app`.
 
 ## 3. Build the Player controls
 
@@ -164,4 +165,4 @@ player.on("configurationChanged", () => {
 });
 ```
 
-The working implementation is in `dist/index.html`; the fixed-origin asset proxy is in `server.js`.
+The working implementation is in `dist/index.html`; `server.js` is only the local/static web server.

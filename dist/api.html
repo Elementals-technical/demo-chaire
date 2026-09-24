@@ -171,9 +171,9 @@
   environment: "production",
   viewMode: "WebGL",
   shareable: true,
-  playcanvasBaseUrl: window.location.origin + "/vivid-assets/"
+  playcanvasBaseUrl: "https://2d-render-admin-storage.fra1.cdn.digitaloceanspaces.com/projects/1189/products/3478/playcanvas/"
 });</code></pre>
-        <div class="note"><code>shareable: true</code> fixes the active product and removes Product selection. This demo uses a fixed-origin asset proxy because the current PlayCanvas export restricts browser origins.</div>
+        <div class="note"><code>shareable: true</code> fixes the active product and removes Product selection. The PlayCanvas export is loaded directly from DigitalOcean Spaces, so the deployed site origin must be allowed by the Space CORS policy.</div>
       </section>
 
       <section class="section">

@@ -13,7 +13,7 @@
 
 `dist/index.html` викликає `window.initVividPlayer()`, будує Player controls із `player.getConfigOptions()`, застосовує варіанти через `player.setConfigOption()` і виводить актуальний стан через `player.getConfiguration()`.
 
-Node-сервер надає фіксований `/vivid-assets/` проксі для PlayCanvas-експорту цього продукту, оскільки його CDN обмежує дозволені browser origins.
+PlayCanvas-експорт завантажується напряму з DigitalOcean Spaces. Для розгорнутого сайту origin `https://rational-icombi-gzvwt.ondigitalocean.app` має бути доданий до CORS-правил Space.
 
 ## Запуск локально
 
