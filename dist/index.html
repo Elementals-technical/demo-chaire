@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vivid Player Demo | Lippert Components</title>
+  <base href="/" />
+  <title>RATIONAL iCombi | Vivid Player Demo</title>
   <style>
     :root {
       color-scheme: light;
@@ -328,6 +329,14 @@
       min-height: min(720px, calc(100vh - 245px));
     }
 
+    #vivid-player-root iframe {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #fff;
+    }
+
     .viewer-placeholder {
       position: absolute;
       inset: 0;
@@ -584,12 +593,12 @@
       <section class="hero" aria-label="Demo intro">
         <div>
           <div class="eyebrow">
-            <span class="chip">Project id: 492 <span class="copy-dot" aria-hidden="true"></span></span>
-            <span class="chip">Product id: 2739 <span class="copy-dot" aria-hidden="true"></span></span>
+            <span class="chip">Project id: 1189 <span class="copy-dot" aria-hidden="true"></span></span>
+            <span class="chip">Product id: 3478 <span class="copy-dot" aria-hidden="true"></span></span>
             <span class="chip chip-green">WebGL</span>
           </div>
-          <h1>Lippert Components demo</h1>
-          <p class="lead">A simple client demo page for embedding Vivid Player, switching exposed material variants, and preparing an AR QR handoff.</p>
+          <h1>RATIONAL iCombi demo</h1>
+          <p class="lead">An interactive Vivid Player demo for exploring the iCombi system, switching equipment options, and preparing an AR QR handoff.</p>
         </div>
 
         <div class="status-row" aria-label="Demo status">
@@ -612,10 +621,10 @@
         <div class="viewer-card">
           <div class="card-head">
             <div>
-              <h2 class="card-title">DemoChair preview</h2>
+              <h2 class="card-title">RATIONAL iCombi preview</h2>
               <p class="card-subtitle">Loaded from the production Vivid CDN</p>
             </div>
-            <span class="chip">DemoChair</span>
+            <span class="chip">iCombi</span>
           </div>
 
           <div class="viewer-body">
@@ -687,10 +696,13 @@
     (async function () {
       const DEMO = {
         container: "#vivid-player-root",
-        idProject: "492",
-        idProduct: "2739",
+        idProject: "1189",
+        idProduct: "3478",
+        playerUrl: "https://player.vivid3d.tech/1189/3478/shareable",
+        playcanvasBaseUrl: window.location.origin + "/vivid-assets/",
         environment: "production",
         viewMode: "WebGL",
+        shareable: true,
         downloadPageUrl: "https://player.vivid3d.tech/ar-download",
         arFormat: "both",
         qrSize: 240,
@@ -754,6 +766,29 @@
           "ar-message",
           message || "Configuration changed. Refresh QR to export the updated model.",
         );
+      };
+
+      const showEmbeddedFallback = (reason) => {
+        const root = $("vivid-player-root");
+        root.innerHTML = "";
+
+        const frame = document.createElement("iframe");
+        frame.src = DEMO.playerUrl;
+        frame.title = "RATIONAL iCombi configurator";
+        frame.allow = "fullscreen; xr-spatial-tracking";
+        frame.setAttribute("allowfullscreen", "");
+        root.appendChild(frame);
+
+        $("viewer-placeholder").classList.add("is-hidden");
+        $("options-list").innerHTML = "";
+        $("vivid-ar-qr").innerHTML = "";
+        setArButtons(false);
+        setText("player-status", "Embedded");
+        setText("config-status", "In player");
+        setText("ar-status", "In player");
+        setText("options-message", "Use the built-in product controls inside the embedded Vivid player.");
+        setText("ar-message", "AR and download actions remain available from the embedded player menu.");
+        debug("using embedded fallback", reason || "SDK unavailable");
       };
 
       const showQr = (qrUrl, downloadUrl) => {
@@ -854,19 +889,6 @@
         });
       };
 
-      const applyDemoVariant = async () => {
-        const options = player.getConfigOptions();
-        const firstOption = options[0] ? player.getConfigOption(options[0].key) : null;
-
-        if (firstOption && firstOption.variants[1]) {
-          await player.setConfigOption(firstOption.key, firstOption.variants[1].value);
-          debug("demo variant applied", {
-            key: firstOption.key,
-            value: firstOption.variants[1].value,
-          });
-        }
-      };
-
       const prepareAr = async () => {
         if (!player || isPreparingAr) return;
 
@@ -931,9 +953,11 @@
       };
 
       const destroyPlayer = async () => {
-        if (!player) return;
-        await player.destroy();
-        player = null;
+        if (player) {
+          await player.destroy();
+          player = null;
+        }
+        $("vivid-player-root").innerHTML = "";
       };
 
       const initDemo = async () => {
@@ -952,6 +976,11 @@
         arDownloadUrl = "";
         arNeedsFreshExport = false;
 
+        const expectedPath = "/" + DEMO.idProject + "/" + DEMO.idProduct;
+        if (window.location.pathname !== expectedPath) {
+          window.history.replaceState(null, "", expectedPath + window.location.search + window.location.hash);
+        }
+
         if (window.__vividScriptFailed || !window.initVividPlayer) {
           throw new Error("Vivid CDN script could not be loaded.");
         }
@@ -965,6 +994,8 @@
           idProduct: DEMO.idProduct,
           environment: DEMO.environment,
           viewMode: DEMO.viewMode,
+          shareable: DEMO.shareable,
+          playcanvasBaseUrl: DEMO.playcanvasBaseUrl,
         });
 
         ["ready", "configurationChanged", "error", "fullscreenChange", "renderProgress", "arRequested", "arOpened", "destroyed"].forEach((eventName) => {
@@ -981,14 +1012,17 @@
         setText("player-status", "Ready");
         $("viewer-placeholder").classList.add("is-hidden");
 
-        await applyDemoVariant();
         renderConfigOptions();
         writeConfigOutput(player.getConfiguration());
         await prepareAr();
       };
 
       $("fullscreen-button").addEventListener("click", () => {
-        if (player) player.fullscreen.toggle();
+        if (player) {
+          player.fullscreen.toggle();
+        } else if ($("vivid-player-root").requestFullscreen) {
+          $("vivid-player-root").requestFullscreen();
+        }
       });
       $("prepare-ar").addEventListener("click", prepareAr);
       $("open-ar").addEventListener("click", openAr);
@@ -1005,8 +1039,7 @@
           await initDemo();
         } catch (error) {
           const message = error && error.message ? error.message : String(error);
-          setError("options-message", message);
-          setText("player-status", "Error");
+          showEmbeddedFallback(message);
           debug("init failed", message);
         }
       });
@@ -1030,10 +1063,7 @@
         await initDemo();
       } catch (error) {
         const message = error && error.message ? error.message : String(error);
-        $("viewer-placeholder").classList.remove("is-hidden");
-        setError("options-message", message);
-        setText("player-status", "Error");
-        setText("config-status", "Stopped");
+        showEmbeddedFallback(message);
         debug("init failed", message);
       }
     })();

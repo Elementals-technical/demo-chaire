@@ -3,10 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "serve -s dist -l tcp://0.0.0.0:${PORT:-8080}"
-  },
-  "dependencies": {
-    "serve": "^14.2.4"
+    "start": "node server.js"
   },
   "engines": {
     "node": ">=18"
