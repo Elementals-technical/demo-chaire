@@ -933,11 +933,11 @@
         });
       };
 
-      const prepareAr = async () => {
+      const prepareAr = async (forceExport = false) => {
         if (!player || isPreparingAr) return;
 
         clearError("ar-message");
-        setText("ar-message", "Checking AR export...");
+        setText("ar-message", forceExport ? "Generating a fresh AR export..." : "Checking AR export...");
         setText("ar-status", "Checking");
         setArButtons(false);
         arDownloadUrl = "";
@@ -958,7 +958,7 @@
             format: DEMO.arFormat,
             downloadPageUrl: DEMO.downloadPageUrl,
             configuration: buildCurrentArConfiguration(),
-            skipQuery: arNeedsFreshExport,
+            skipQuery: forceExport || arNeedsFreshExport,
           });
 
           const downloadUrl = player.ar.createDownloadUrl(ar, {
@@ -980,7 +980,7 @@
           setArButtons(true);
           setText("ar-message", ar.reusedExisting ? "QR is ready. Existing AR assets were reused." : "QR is ready. New AR assets were generated.");
           setText("ar-status", "Ready");
-          debug("AR ready", { reusedExisting: ar.reusedExisting, downloadUrl });
+          debug("AR ready", { forceExport, reusedExisting: ar.reusedExisting, downloadUrl });
         } catch (error) {
           const message = error && error.message ? error.message : String(error);
           setError("ar-message", message);
@@ -1062,7 +1062,7 @@
       $("fullscreen-button").addEventListener("click", () => {
         if (player) player.fullscreen.toggle();
       });
-      $("prepare-ar").addEventListener("click", prepareAr);
+      $("prepare-ar").addEventListener("click", () => prepareAr(true));
       $("open-ar").addEventListener("click", openAr);
       $("open-ar-top").addEventListener("click", openAr);
       $("get-config-button").addEventListener("click", () => {

@@ -335,12 +335,13 @@ renderCurrentConfig();</code></pre>
         <pre><code>&lt;div id="vivid-ar-qr"&gt;&lt;/div&gt;
 
 &lt;script&gt;
-  async function prepareArQr() {
+  async function prepareArQr(forceExport = false) {
     if (!player.ar.isAvailable()) return;
 
     const ar = await player.ar.open({
       format: "both",
-      downloadPageUrl: "https://player.vivid3d.tech/ar-download"
+      downloadPageUrl: "https://player.vivid3d.tech/ar-download",
+      skipQuery: forceExport
     });
 
     const downloadUrl = player.ar.createDownloadUrl(ar, {
@@ -355,6 +356,7 @@ renderCurrentConfig();</code></pre>
     return downloadUrl;
   }
 &lt;/script&gt;</code></pre>
+        <div class="note">Pass <code>true</code> from a manual Refresh action to skip the existing-export lookup and generate fresh GLB/USDZ assets. Automatic initialization can call <code>prepareArQr()</code> without forcing a new export.</div>
       </article>
     </section>
   </main>
