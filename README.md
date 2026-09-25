@@ -11,7 +11,7 @@
 
 ## Інтеграція
 
-`dist/index.html` викликає `window.initVividPlayer()`, будує Player controls із `player.getConfigOptions()`, застосовує варіанти через `player.setConfigOption()` і виводить актуальний стан через `player.getConfiguration()`.
+`dist/index.html` викликає `window.initVividPlayer()` і спочатку будує Player controls із `player.getConfigOptions()`. Якщо продукт не має CMS-опцій, сторінка використовує runtime fallback: `player.configurator.getAvailableOptions()`, `setConfig()` і `getConfig()`.
 
 PlayCanvas-експорт завантажується напряму з DigitalOcean Spaces. Для розгорнутого сайту origin `https://rational-icombi-gzvwt.ondigitalocean.app` має бути доданий до CORS-правил Space.
 

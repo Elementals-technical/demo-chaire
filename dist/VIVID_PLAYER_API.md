@@ -52,7 +52,21 @@ function renderOptionButtons() {
   const root = document.querySelector("#options-list");
   root.innerHTML = "";
 
-  player.getConfigOptions().forEach((option) => {
+  const cmsOptions = player.getConfigOptions();
+  const runtime = player.configurator || player.getConfiguratorApi();
+  const options = cmsOptions.length
+    ? cmsOptions
+    : Object.entries(runtime?.getAvailableOptions?.() || {}).map(([key, option]) => ({
+        key,
+        label: option.label || key,
+        source: "runtime",
+        variants: (option.options || []).map((variant) => ({
+          ...variant,
+          selected: Object.is(variant.value, option.value),
+        })),
+      }));
+
+  options.forEach((option) => {
     const group = document.createElement("section");
     const title = document.createElement("strong");
     title.textContent = option.label || option.key;
@@ -65,7 +79,11 @@ function renderOptionButtons() {
       button.disabled = variant.selected;
 
       button.addEventListener("click", async () => {
-        await player.setConfigOption(option.key, variant.value);
+        if (option.source === "runtime") {
+          await runtime.setConfig({ [option.key]: variant.value });
+        } else {
+          await player.setConfigOption(option.key, variant.value);
+        }
         renderOptionButtons();
         renderCurrentConfig();
       });
@@ -78,7 +96,8 @@ function renderOptionButtons() {
 }
 ```
 
-For this product, `getConfigOptions()` returns five groups:
+For this product, the CMS `getConfigOptions()` response can be empty. In that
+case `window.configurator.getAvailableOptions()` supplies five runtime groups:
 
 1. `Icombi Body`
 2. `Icombi Stand`

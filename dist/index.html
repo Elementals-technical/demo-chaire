@@ -733,6 +733,50 @@
       const writeConfigOutput = (value) => {
         $("config-output").textContent = JSON.stringify(value, null, 2);
       };
+      const getRuntimeConfigurator = () => {
+        if (!player) return null;
+        return player.configurator || player.ConfiguratorAPI || player.getConfiguratorApi?.() || null;
+      };
+      const getRuntimeConfigOptions = () => {
+        const runtime = getRuntimeConfigurator();
+        if (typeof runtime?.getAvailableOptions !== "function") return [];
+
+        const availableOptions = runtime.getAvailableOptions() || {};
+        return Object.entries(availableOptions).map(([key, option]) => {
+          const variants = Array.isArray(option?.options) ? option.options : [];
+
+          return {
+            key,
+            label: option?.label || key,
+            type: option?.type || "runtime",
+            value: option?.value,
+            source: "runtime",
+            variants: variants.map((variant, index) => ({
+              id: `runtime-${index}`,
+              name: variant?.label || String(variant?.value),
+              label: variant?.label || String(variant?.value),
+              value: variant?.value,
+              selected: Object.is(variant?.value, option?.value),
+            })),
+          };
+        });
+      };
+      const getDisplayConfigOptions = () => {
+        const cmsOptions = player?.getConfigOptions?.() || [];
+        if (cmsOptions.length) {
+          return cmsOptions.map((option) => ({ ...option, source: "cms" }));
+        }
+        return getRuntimeConfigOptions();
+      };
+      const getDisplayConfiguration = () => {
+        const cmsOptions = player?.getConfigOptions?.() || [];
+        const runtime = getRuntimeConfigurator();
+
+        if (!cmsOptions.length && typeof runtime?.getConfig === "function") {
+          return runtime.getConfig();
+        }
+        return player?.getConfiguration?.() || {};
+      };
       const setArButtons = (enabled) => {
         $("open-ar").disabled = !enabled;
         $("open-ar-top").disabled = !enabled;
@@ -744,8 +788,10 @@
 
         const schema = player.getSchema();
         const productId = schema.product && schema.product.id;
+        const runtime = getRuntimeConfigurator();
         const value = {
           selection: schema.selection,
+          runtimeConfig: typeof runtime?.getConfig === "function" ? runtime.getConfig() : null,
           pcConfig: schema.pcConfig && schema.pcConfig.config ? schema.pcConfig.config : schema.pcConfig,
         };
 
@@ -820,14 +866,15 @@
           return;
         }
 
-        const options = player.getConfigOptions();
+        const options = getDisplayConfigOptions();
         if (!options.length) {
-          setText("options-message", "No configurable options were exposed by this product.");
+          setText("options-message", "No CMS or runtime configuration options were exposed by this product.");
           setText("config-status", "No options");
           return;
         }
 
-        setText("options-message", options.length + " option group(s) available.");
+        const optionSource = options[0]?.source === "runtime" ? "runtime" : "CMS";
+        setText("options-message", options.length + " " + optionSource + " option group(s) available.");
         setText("config-status", options.length + " group(s)");
 
         options.forEach((option) => {
@@ -859,10 +906,19 @@
             button.addEventListener("click", async () => {
               try {
                 setText("config-status", "Applying...");
-                await player.setConfigOption(option.key, variant.value);
-                debug("setConfigOption", { key: option.key, value: variant.value });
+                if (option.source === "runtime") {
+                  const runtime = getRuntimeConfigurator();
+                  if (typeof runtime?.setConfig !== "function") {
+                    throw new Error("Runtime configurator does not expose setConfig().");
+                  }
+                  await runtime.setConfig({ [option.key]: variant.value });
+                  debug("runtime.setConfig", { key: option.key, value: variant.value });
+                } else {
+                  await player.setConfigOption(option.key, variant.value);
+                  debug("setConfigOption", { key: option.key, value: variant.value });
+                }
                 renderConfigOptions();
-                writeConfigOutput(player.getConfiguration());
+                writeConfigOutput(getDisplayConfiguration());
                 invalidateAr();
               } catch (error) {
                 setError("options-message", error && error.message ? error.message : String(error));
@@ -989,7 +1045,7 @@
             debug("event:" + eventName, payload || "");
             if (eventName === "configurationChanged") {
               renderConfigOptions();
-              writeConfigOutput(player.getConfiguration());
+              writeConfigOutput(getDisplayConfiguration());
               invalidateAr();
             }
           });
@@ -999,7 +1055,7 @@
         $("viewer-placeholder").classList.add("is-hidden");
 
         renderConfigOptions();
-        writeConfigOutput(player.getConfiguration());
+        writeConfigOutput(getDisplayConfiguration());
         await prepareAr();
       };
 
@@ -1014,7 +1070,7 @@
           writeConfigOutput({});
           return;
         }
-        writeConfigOutput(player.getConfiguration());
+        writeConfigOutput(getDisplayConfiguration());
       });
       $("init-button").addEventListener("click", async () => {
         try {
